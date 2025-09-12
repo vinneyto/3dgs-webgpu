@@ -14,7 +14,18 @@ function PlayCanvasCube() {
       graphicsDeviceOptions: { gl: context },
     });
     app.autoRender = false;
+    app.setCanvasFillMode(pc.FILLMODE_NONE);
+    app.setCanvasResolution(pc.RESOLUTION_AUTO);
     app.start();
+
+    const camera = new pc.Entity('pc-camera');
+    camera.addComponent('camera', {
+      clearColorBuffer: false,
+      clearDepthBuffer: false,
+    });
+    camera.setLocalPosition(0, 0, 10);
+    camera.lookAt(pc.Vec3.ZERO);
+    app.root.addChild(camera);
 
     const box = new pc.Entity('pc-box');
     box.addComponent('render', { type: 'box' });
@@ -25,12 +36,13 @@ function PlayCanvasCube() {
     return () => app.destroy();
   }, [gl]);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const app = appRef.current;
     const box = boxRef.current;
     if (app && box) {
       box.rotate(30 * delta, 60 * delta, 0);
       app.render();
+      state.gl.resetState();
     }
   });
 
@@ -39,9 +51,12 @@ function PlayCanvasCube() {
 
 export default function R3FPlayCanvasDemo() {
   return (
-    <Canvas>
+    <Canvas
+      style={{ width: '100%', height: '100%' }}
+      camera={{ position: [0, 0, 10] }}
+    >
       <ambientLight />
-      <mesh position={[-2, 0, 0]}>
+      <mesh>
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial />
       </mesh>
