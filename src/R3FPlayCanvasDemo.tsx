@@ -41,6 +41,9 @@ function PlayCanvasCube() {
     const box = boxRef.current;
     if (app && box) {
       box.rotate(30 * delta, 60 * delta, 0);
+      // Reset Three.js state before and after PlayCanvas renders so both
+      // engines do not interfere with each other's WebGL state tracking.
+      state.gl.resetState();
       app.render();
       state.gl.resetState();
     }
