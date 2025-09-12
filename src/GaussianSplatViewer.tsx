@@ -1,34 +1,61 @@
-import React from 'react';
-import { Application, Entity } from '@playcanvas/react';
-import { Camera, GSplat, Script } from '@playcanvas/react/components';
-import { useSplat } from '@playcanvas/react/hooks';
+import React, { useEffect, useRef } from 'react';
+import * as pc from 'playcanvas';
 import { CameraControls } from 'playcanvas/scripts/esm/camera-controls.mjs';
 
 interface Props {
   url?: string;
 }
 
-function SplatEntity({ url }: { url: string }) {
-  const { asset } = useSplat(url);
-  if (!asset) return null;
-  return (
-    <Entity>
-      <GSplat asset={asset} />
-    </Entity>
-  );
-}
+const GaussianSplatViewer: React.FC<Props> = ({ url = '/point_cloud_mobile (2).ksplat' }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-const GaussianSplatViewer: React.FC<Props> = ({ url = '/point_cloud_mobile (2).ksplat' }) => (
-  <Application
-    style={{ width: '100%', height: '100%' }}
-    graphicsDeviceOptions={{ antialias: false }}
-  >
-    <Entity name="Camera" position={[0, 0, 2.5]}>
-      <Camera />
-      <Script script={CameraControls} />
-    </Entity>
-    <SplatEntity url={url} />
-  </Application>
-);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const app = new pc.Application(canvas, {
+      graphicsDeviceOptions: { antialias: false }
+    });
+
+    // register GSplat support
+    app.loader.addHandler('gsplat', new pc.GSplatHandler(app));
+    app.systems.add(new pc.GSplatComponentSystem(app));
+
+    app.start();
+    app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
+    app.setCanvasResolution(pc.RESOLUTION_AUTO);
+
+    const resize = () => app.resizeCanvas();
+    window.addEventListener('resize', resize);
+
+    // camera with orbit controls
+    const camera = new pc.Entity('Camera');
+    camera.addComponent('camera', { clearColor: new pc.Color(0, 0, 0, 1) });
+    camera.setLocalPosition(0, 0, 2.5);
+    camera.lookAt(pc.Vec3.ZERO);
+    app.root.addChild(camera);
+
+    app.scripts.add(CameraControls);
+    camera.addComponent('script');
+    camera.script!.create('cameraControls');
+
+    // load Gaussian splat
+    const asset = new pc.Asset('splat', 'gsplat', { url });
+    app.assets.add(asset);
+    asset.ready(() => {
+      const splat = new pc.Entity('Splat');
+      splat.addComponent('gsplat', { asset });
+      app.root.addChild(splat);
+    });
+    app.assets.load(asset);
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      app.destroy();
+    };
+  }, [url]);
+
+  return <canvas ref={canvasRef} />;
+};
 
 export default GaussianSplatViewer;
