@@ -6,6 +6,7 @@ import {
   FILLMODE_FILL_WINDOW,
   RESOLUTION_AUTO,
 } from "playcanvas";
+import { PCSCameraControl } from "./PCSCameraControl";
 
 export class PlayCanvasApplication {
   private app: any;
@@ -29,11 +30,8 @@ export class PlayCanvasApplication {
 
   async init(): Promise<void> {
     const assets = [
-      new Asset("camera-controls", "script", {
-        url: "https://cdn.jsdelivr.net/npm/playcanvas/scripts/esm/camera-controls.mjs",
-      }),
       new Asset("toy", "gsplat", {
-        url: "https://developer.playcanvas.com/assets/toy-cat.sog",
+        url: "/unit3.sog",
       }),
     ];
 
@@ -44,14 +42,12 @@ export class PlayCanvasApplication {
     camera.setPosition(0, 0, 2.5);
     camera.addComponent("camera");
     camera.addComponent("script");
-    // @ts-expect-error
-    camera.script.create("cameraControls");
     this.app.root.addChild(camera);
 
     const splat = new Entity("Toy Cat");
     splat.setPosition(0, -0.7, 0);
     splat.setEulerAngles(0, 0, 180);
-    splat.addComponent("gsplat", { asset: assets[1] });
+    splat.addComponent("gsplat", { asset: assets[0] });
     this.app.root.addChild(splat);
   }
 }

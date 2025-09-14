@@ -9,10 +9,13 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/three": "^0.180.0",
     "typescript": "~5.8.3",
     "vite": "^7.1.2"
   },
   "dependencies": {
-    "playcanvas": "^2.11.5"
+    "@sparkjsdev/spark": "^0.1.8",
+    "playcanvas": "^2.11.5",
+    "three": "^0.180.0"
   }
 }

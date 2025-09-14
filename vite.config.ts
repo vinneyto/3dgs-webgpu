@@ -6,4 +6,5 @@ export default defineConfig({
       external: ["playcanvas"],
     },
   },
+  optimizeDeps: { exclude: ["@sparkjsdev/spark"] },
 });
